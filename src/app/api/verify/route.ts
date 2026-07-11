@@ -4,7 +4,7 @@ import { VERIFICATION_SYSTEM_PROMPT } from "@/lib/prompts";
 import { tryParseModelJson } from "@/lib/json";
 import { verifyWithModel } from "@/lib/openrouter";
 import { buildSearchQuery, searchWeb, type TavilyResult } from "@/lib/tavily";
-import type { Verdict, VerdictRating, VerifyRequest } from "@/lib/types";
+import type { Verdict, VerdictRating, VerdictSource, VerifyRequest } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -37,9 +37,30 @@ ${s.published_date ? `Date: ${s.published_date}\n` : ""}Snippet: ${s.content}`
     .join("\n\n");
 }
 
+/** Normalize URLs so slight model rewrites still match Tavily results. */
+function normalizeUrl(url: string): string {
+  try {
+    const u = new URL(url.trim());
+    u.hash = "";
+    // Drop trailing slash for comparison
+    const path = u.pathname.replace(/\/$/, "") || "/";
+    return `${u.protocol}//${u.host.toLowerCase()}${path}${u.search}`;
+  } catch {
+    return url.trim().replace(/\/$/, "").toLowerCase();
+  }
+}
+
+function tavilyAsSources(results: TavilyResult[]): VerdictSource[] {
+  return results.slice(0, 5).map((s) => ({
+    title: s.title || s.url,
+    url: s.url,
+    note: s.content ? s.content.slice(0, 160) : undefined,
+  }));
+}
+
 function normalizeVerdict(
   raw: Partial<Verdict>,
-  allowedUrls: Set<string>
+  searchResults: TavilyResult[]
 ): Verdict {
   const rating = VALID_RATINGS.includes(raw.rating as VerdictRating)
     ? (raw.rating as VerdictRating)
@@ -55,24 +76,32 @@ function normalizeVerdict(
       ? raw.summary.trim()
       : "Unable to produce a clear summary from the available sources.";
 
-  const sources = Array.isArray(raw.sources)
-    ? raw.sources
-        .filter(
-          (s): s is { title: string; url: string; note?: string } =>
-            !!s &&
-            typeof s === "object" &&
-            typeof s.title === "string" &&
-            typeof s.url === "string" &&
-            allowedUrls.has(s.url)
-        )
-        .map((s) => ({
-          title: s.title,
-          url: s.url,
-          ...(typeof s.note === "string" && s.note.trim()
-            ? { note: s.note.trim() }
+  const byNormUrl = new Map(
+    searchResults.map((s) => [normalizeUrl(s.url), s] as const)
+  );
+
+  // Prefer model-cited sources that match real search hits; fall back to all Tavily hits
+  // so the UI always shows research when the web search ran.
+  const cited: VerdictSource[] = [];
+  if (Array.isArray(raw.sources)) {
+    for (const s of raw.sources) {
+      if (!s || typeof s !== "object") continue;
+      if (typeof s.title !== "string" || typeof s.url !== "string") continue;
+      const hit = byNormUrl.get(normalizeUrl(s.url));
+      if (!hit) continue;
+      cited.push({
+        title: s.title.trim() || hit.title || hit.url,
+        url: hit.url,
+        ...(typeof s.note === "string" && s.note.trim()
+          ? { note: s.note.trim() }
+          : hit.content
+            ? { note: hit.content.slice(0, 160) }
             : {}),
-        }))
-    : [];
+      });
+    }
+  }
+
+  const sources = cited.length > 0 ? cited : tavilyAsSources(searchResults);
 
   return { rating, confidence, summary, sources };
 }
@@ -80,7 +109,17 @@ function normalizeVerdict(
 async function runVerification(claim: string): Promise<Verdict> {
   const query = buildSearchQuery(claim);
   const searchResults = await searchWeb(query, 5);
-  const allowedUrls = new Set(searchResults.map((s) => s.url));
+
+  // If no sources at all, force unverifiable — but still return empty sources honestly
+  if (searchResults.length === 0) {
+    return {
+      rating: "unverifiable",
+      confidence: 0.2,
+      summary:
+        "No relevant web sources were found for this claim, so it cannot be verified.",
+      sources: [],
+    };
+  }
 
   const userPrompt = `Claim to verify:
 """
@@ -90,7 +129,8 @@ ${claim}
 Web search sources:
 ${formatSourcesForPrompt(searchResults)}
 
-Return a verdict as strict JSON matching the Verdict schema.`;
+Return a verdict as strict JSON matching the Verdict schema.
+You MUST cite sources using ONLY the exact URLs listed above.`;
 
   const messages = [
     { role: "system" as const, content: VERIFICATION_SYSTEM_PROMPT },
@@ -114,21 +154,17 @@ Return a verdict as strict JSON matching the Verdict schema.`;
   }
 
   if (!parsed) {
-    throw new Error("Failed to parse verification JSON after retry");
-  }
-
-  // If no sources at all, force unverifiable
-  if (searchResults.length === 0) {
+    // Research succeeded even if the model JSON failed — still show sources.
     return {
       rating: "unverifiable",
-      confidence: 0.2,
+      confidence: 0.3,
       summary:
-        "No relevant web sources were found for this claim, so it cannot be verified.",
-      sources: [],
+        "Web sources were found, but the model failed to return a valid verdict. Review the sources below.",
+      sources: tavilyAsSources(searchResults),
     };
   }
 
-  return normalizeVerdict(parsed, allowedUrls);
+  return normalizeVerdict(parsed, searchResults);
 }
 
 export async function POST(request: Request) {

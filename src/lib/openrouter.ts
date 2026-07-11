@@ -26,13 +26,14 @@ function getApiKey(): string {
   return key;
 }
 
-export async function chatCompletion(options: {
+async function requestCompletion(options: {
   model: string;
   messages: ChatMessage[];
   temperature?: number;
   maxTokens?: number;
-}): Promise<string> {
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+  useJsonFormat: boolean;
+}): Promise<Response> {
+  return fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getApiKey()}`,
@@ -45,16 +46,53 @@ export async function chatCompletion(options: {
       messages: options.messages,
       temperature: options.temperature ?? 0.1,
       max_tokens: options.maxTokens ?? 2048,
-      response_format: { type: "json_object" },
+      ...(options.useJsonFormat
+        ? { response_format: { type: "json_object" } }
+        : {}),
     }),
   });
+}
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`OpenRouter error ${response.status}: ${body}`);
+function looksLikeJsonFormatUnsupported(status: number, body: string): boolean {
+  if (status !== 400 && status !== 404 && status !== 422) return false;
+  const lower = body.toLowerCase();
+  return (
+    lower.includes("response_format") ||
+    lower.includes("json_object") ||
+    lower.includes("structured output") ||
+    lower.includes("not supported")
+  );
+}
+
+export async function chatCompletion(options: {
+  model: string;
+  messages: ChatMessage[];
+  temperature?: number;
+  maxTokens?: number;
+}): Promise<string> {
+  let response = await requestCompletion({ ...options, useJsonFormat: true });
+  let bodyText = await response.text();
+
+  // Some free models reject JSON mode — retry without it so research still runs.
+  if (
+    !response.ok &&
+    looksLikeJsonFormatUnsupported(response.status, bodyText)
+  ) {
+    response = await requestCompletion({ ...options, useJsonFormat: false });
+    bodyText = await response.text();
   }
 
-  const data = (await response.json()) as OpenRouterResponse;
+  if (!response.ok) {
+    throw new Error(`OpenRouter error ${response.status}: ${bodyText}`);
+  }
+
+  let data: OpenRouterResponse;
+  try {
+    data = JSON.parse(bodyText) as OpenRouterResponse;
+  } catch {
+    throw new Error(`OpenRouter returned non-JSON body: ${bodyText.slice(0, 200)}`);
+  }
+
   if (data.error?.message) {
     throw new Error(`OpenRouter error: ${data.error.message}`);
   }
