@@ -1,0 +1,355 @@
+# Instincts generated from https://github.com/shane-ctrl/Test
+# Generated: 2026-07-11T20:06:07.701Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: Test-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Commit Length
+
+## Action
+
+Write moderate-length commit messages (~60 characters)
+
+## Evidence
+
+- Average commit message length: 60 chars
+- Based on 2 commits
+
+---
+id: Test-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: Test-import-alias
+trigger: "when importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Import Alias
+
+## Action
+
+Use path aliases (@/, ~/) instead of relative imports
+
+## Evidence
+
+- Import analysis shows alias pattern
+- Example: import { x } from '@/lib/x'
+
+---
+id: Test-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: Test-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: app, lib
+
+---
+id: Test-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/shane-ctrl/Test
+---
+
+# Test Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: test-camelcase-files
+trigger: "When creating or renaming a file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Camelcase Files
+
+## Action
+
+Use camelCase for the filename
+
+## Evidence
+
+- Pattern in namingConventions.files
+
+---
+id: test-camelcase-functions
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Camelcase Functions
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: test-pascalcase-classes
+trigger: "When defining a class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Pascalcase Classes
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: test-screaming-snake-constants
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Screaming Snake Constants
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: test-alias-imports
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Alias Imports
+
+## Action
+
+Use alias import style
+
+## Evidence
+
+- Pattern in importStyle
+
+---
+id: test-named-exports
+trigger: "When exporting modules or functions"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Named Exports
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle
+
+---
+id: test-try-catch-errors
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Try Catch Errors
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in errorHandling.style
+
+---
+id: test-no-custom-error-classes
+trigger: "When defining error handling logic"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test No Custom Error Classes
+
+## Action
+
+Do not create custom error classes
+
+## Evidence
+
+- Pattern in errorHandling.customErrorClasses
+
+---
+id: test-commit-freeform
+trigger: "When writing a commit message"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Commit Freeform
+
+## Action
+
+Write a freeform message without a prefix
+
+## Evidence
+
+- Pattern in commits.type
+- Examples in commits.examples
+
+---
+id: test-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Commit Length
+
+## Action
+
+Keep the commit message concise (around 60 characters)
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: test-separate-test-location
+trigger: "When adding or organizing test files"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Separate Test Location
+
+## Action
+
+Place test files in a separate location from source code
+
+## Evidence
+
+- Pattern in architecture.testLocation
+
+---
+id: test-type-based-modules
+trigger: "When organizing modules"
+confidence: 0.7
+domain: architecture
+source: repo-analysis
+source_repo: shane-ctrl/Test
+---
+
+# Test Type Based Modules
+
+## Action
+
+Group modules by type
+
+## Evidence
+
+- Pattern in architecture.moduleOrganization
+
