@@ -13,9 +13,9 @@ export const TRANSCRIPT_WINDOW_MS = 2 * 60 * 1000;
 /** Concurrent verification workers. */
 export const MAX_CONCURRENT_VERIFICATIONS = 3;
 
-/** OpenRouter models */
-export const EXTRACT_MODEL = "anthropic/claude-haiku-4.5";
-export const VERIFY_MODEL = "anthropic/claude-sonnet-4.5";
+/** OpenRouter models — free tier only (`:free` variants, $0) */
+export const EXTRACT_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
+export const VERIFY_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 export const TAVILY_BASE_URL = "https://api.tavily.com/search";
