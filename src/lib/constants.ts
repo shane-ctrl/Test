@@ -13,9 +13,12 @@ export const TRANSCRIPT_WINDOW_MS = 2 * 60 * 1000;
 /** Concurrent verification workers. */
 export const MAX_CONCURRENT_VERIFICATIONS = 3;
 
-/** OpenRouter models — free tier only (`:free` variants, $0) */
-export const EXTRACT_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
-export const VERIFY_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+/**
+ * OpenRouter models — free tier only (`:free` variants, $0).
+ * Must support `response_format: json_object` or extract/verify silently fail.
+ */
+export const EXTRACT_MODEL = "openai/gpt-oss-20b:free";
+export const VERIFY_MODEL = "qwen/qwen3-next-80b-a3b-instruct:free";
 
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 export const TAVILY_BASE_URL = "https://api.tavily.com/search";

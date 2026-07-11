@@ -56,6 +56,6 @@ export async function searchWeb(
 export function buildSearchQuery(claim: string): string {
   const trimmed = claim.trim();
   // Keep queries focused; Tavily works best with concise factual queries
-  if (trimmed.length <= 200) return trimmed;
-  return trimmed.slice(0, 200);
+  const core = trimmed.length <= 180 ? trimmed : trimmed.slice(0, 180);
+  return `${core} fact check evidence`;
 }

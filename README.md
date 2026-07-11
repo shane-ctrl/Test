@@ -6,7 +6,7 @@ Real-time debate fact-checker. The app listens through your microphone, transcri
 
 - **Next.js** (App Router) + TypeScript + Tailwind + shadcn/ui
 - **Speech-to-text:** Web Speech API (Chrome/Edge), behind a `TranscriptionProvider` interface
-- **LLMs:** OpenRouter free models (Nemotron Nano for extraction, Llama 3.3 70B for verification)
+- **LLMs:** OpenRouter free models (GPT-OSS 20B for extraction, Qwen3 80B for verification)
 - **Web search:** Tavily (top 5 results)
 - **State:** client-side only for MVP (no database)
 
